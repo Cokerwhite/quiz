@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Project Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font family -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background for Web3 theme */
+        }
+        .quiz-container {
+            min-height: 80vh;
+        }
+        .card {
+            background-color: #161b22;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.15), 0 0 10px rgba(0, 255, 255, 0.1);
+            border: 1px solid #30363d;
+        }
+        .option-button {
+            transition: all 0.2s;
+            border: 1px solid #30363d;
+        }
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
+            background-color: #21262d;
+            border-color: #484f58;
+        }
+        .selected {
+            background-color: #21262d;
+            border-color: #58a6ff;
+            color: #58a6ff;
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
+        }
+        .correct {
+            background-color: #238636;
+            border-color: #2ea043;
+            color: #ffffff;
+        }
+        .incorrect {
+            background-color: #da3633;
+            border-color: #f85149;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div id="app" class="quiz-container flex flex-col justify-center items-center">
+        <div class="card w-full max-w-xl p-6 md:p-10 rounded-xl">
+            <h1 class="text-3xl font-bold text-center mb-6 text-cyan-400">Web3 Knowledge Check</h1>
+
+            <!-- Quiz Area -->
+            <div id="quiz-area" class="space-y-6 text-gray-200">
+                
+                <!-- Current Question and Progress -->
+                <div class="mb-6">
+                    <p id="progress" class="text-sm text-gray-400 mb-2"></p>
+                    <h2 id="question-text" class="text-xl font-semibold leading-relaxed"></h2>
+                </div>
+
+                <!-- Options -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+
+                <!-- Navigation and Submission -->
+                <div class="flex justify-between pt-6 border-t border-gray-700">
+                    <button id="prev-btn" class="px-5 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-medium transition duration-150" disabled>
+                        Previous
+                    </button>
+                    <button id="next-btn" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition duration-150">
+                        Next
+                    </button>
+                    <button id="submit-btn" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition duration-150 hidden">
+                        Submit Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Area -->
+            <div id="results-area" class="hidden text-gray-200 text-center space-y-6">
+                <h2 class="text-3xl font-bold text-cyan-400">Quiz Complete!</h2>
+                <p class="text-xl">Your Score:</p>
+                <p id="final-score" class="text-5xl font-extrabold text-emerald-400"></p>
+                
+                <div id="feedback-summary" class="text-left max-h-64 overflow-y-auto p-4 border rounded-lg border-gray-700 space-y-3">
+                    <!-- Detailed feedback will be inserted here -->
+                </div>
+
+                <button id="restart-btn" class="w-full px-5 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition duration-150">
+                    Restart Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Placeholder data - this is what I will replace with your project's content!
+        const quizData = [
+            {
+                question: "What is the primary function of a decentralized autonomous organization (DAO)?",
+                options: ["To centralize decision-making for efficiency.", "To automate processes using smart contracts and community governance.", "To exclusively handle cross-border payments.", "To act as a regulated financial institution."],
+                answer: "To automate processes using smart contracts and community governance."
+            },
+            {
+                question: "Which of the following best describes an NFT?",
+                options: ["A fungible token used for currency transactions.", "A cryptographic token that represents a unique item.", "A contract that automatically executes when conditions are met.", "A peer-to-peer network for file sharing."],
+                answer: "A cryptographic token that represents a unique item."
+            },
+            {
+                question: "In the context of blockchain, what is 'gas'?",
+                options: ["A form of token used for staking rewards.", "The computing effort required to execute a transaction or smart contract.", "The unit of measurement for block size.", "The liquid assets held in a decentralized exchange."],
+                answer: "The computing effort required to execute a transaction or smart contract."
+            },
+            {
+                question: "What problem does Web3 primarily aim to solve compared to Web2?",
+                options: ["Lack of mobile responsiveness.", "Centralized data ownership and control by large corporations.", "Slow internet speeds.", "Insufficient cloud storage capacity."],
+                answer: "Centralized data ownership and control by large corporations."
+            },
+            {
+                question: "What is 'HODL' commonly used to mean in crypto culture?",
+                options: ["Harmonizing Operations of Decentralized Ledgers.", "Hold On for Dear Life (A strategy of holding a crypto asset).", "A high-speed trading algorithm.", "The process of verifying a transaction."],
+                answer: "Hold On for Dear Life (A strategy of holding a crypto asset)."
+            },
+            {
+                question: "Which mechanism is used by most second-generation blockchains to achieve consensus?",
+                options: ["Proof of Work (PoW).", "Proof of Stake (PoS).", "Proof of History (PoH).", "Proof of Elapsed Time (PoET)."],
+                answer: "Proof of Stake (PoS)."
+            },
+            {
+                question: "What is a 'seed phrase' in cryptocurrency wallets?",
+                options: ["The password for a single transaction.", "A list of random words used to recover the wallet.", "The public address for receiving funds.", "A complex mathematical equation for mining."],
+                answer: "A list of random words used to recover the wallet."
+            },
+            {
+                question: "What does 'DeFi' stand for?",
+                options: ["Decentralized Filtering.", "Digital Finance.", "Decentralized Federalism.", "Decentralized Finance."],
+                answer: "Decentralized Finance."
+            },
+            {
+                question: "What is a 'dApp'?",
+                options: ["A standard mobile phone application.", "A corporate-owned application hosted on a central server.", "An application that runs on a decentralized computing system like a blockchain.", "A specialized design application."],
+                answer: "An application that runs on a decentralized computing system like a blockchain."
+            },
+            {
+                question: "Which term describes the process of converting a real-world asset into a digital token on a blockchain?",
+                options: ["Hashing.", "Tokenization.", "Mining.", "Burning."],
+                answer: "Tokenization."
+            }
+        ];
+
+        // --- State Management ---
+        const state = {
+            currentQuestionIndex: 0,
+            answers: new Array(quizData.length).fill(null), // Stores the index of the selected option
+            score: 0,
+            isSubmitted: false
+        };
+
+        // --- DOM Elements ---
+        const elements = {
+            quizArea: document.getElementById('quiz-area'),
+            resultsArea: document.getElementById('results-area'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            progress: document.getElementById('progress'),
+            prevBtn: document.getElementById('prev-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            submitBtn: document.getElementById('submit-btn'),
+            finalScore: document.getElementById('final-score'),
+            feedbackSummary: document.getElementById('feedback-summary'),
+            restartBtn: document.getElementById('restart-btn')
+        };
+
+        // --- Core Functions ---
+
+        /**
+         * Renders the current question and updates UI elements.
+         */
+        function renderQuiz() {
+            if (state.isSubmitted) return; // Prevent rendering if results are already shown
+
+            const currentQ = quizData[state.currentQuestionIndex];
+            const qIndex = state.currentQuestionIndex;
+            const totalQ = quizData.length;
+            
+            // 1. Update Question Text and Progress
+            elements.questionText.textContent = currentQ.question;
+            elements.progress.textContent = `Question ${qIndex + 1} of ${totalQ}`;
+
+            // 2. Clear and Render Options
+            elements.optionsContainer.innerHTML = '';
+            currentQ.options.forEach((option, index) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.textContent = option;
+                optionBtn.className = 'option-button w-full text-left p-3 rounded-lg text-lg text-gray-200 font-medium';
+                
+                // Add click listener
+                optionBtn.addEventListener('click', () => handleAnswerSelect(index));
+
+                // Check if this option was previously selected
+                if (state.answers[qIndex] === index) {
+                    optionBtn.classList.add('selected');
+                }
+                
+                // If submitted, show correct/incorrect state
+                if (state.isSubmitted) {
+                    optionBtn.disabled = true;
+                    if (option === currentQ.answer) {
+                        optionBtn.classList.add('correct');
+                    } else if (state.answers[qIndex] === index && option !== currentQ.answer) {
+                        optionBtn.classList.add('incorrect');
+                    }
+                    optionBtn.classList.remove('selected');
+                }
+                
+                elements.optionsContainer.appendChild(optionBtn);
+            });
+
+            // 3. Update Navigation Buttons
+            elements.prevBtn.disabled = qIndex === 0;
+            elements.nextBtn.disabled = qIndex === totalQ - 1;
+
+            // 4. Update Submit Button visibility
+            if (qIndex === totalQ - 1) {
+                elements.nextBtn.classList.add('hidden');
+                elements.submitBtn.classList.remove('hidden');
+                // Disable submit button until all questions are answered
+                elements.submitBtn.disabled = state.answers.includes(null);
+            } else {
+                elements.nextBtn.classList.remove('hidden');
+                elements.submitBtn.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles the selection of an answer option.
+         * @param {number} selectedOptionIndex - The index of the selected option.
+         */
+        function handleAnswerSelect(selectedOptionIndex) {
+            if (state.isSubmitted) return;
+
+            const currentQ = quizData[state.currentQuestionIndex];
+            const qIndex = state.currentQuestionIndex;
+
+            // Update state
+            state.answers[qIndex] = selectedOptionIndex;
+            
+            // Re-render to update selected button appearance
+            renderQuiz();
+
+            // Check if all questions are now answered and enable Submit button
+            if (state.answers.every(a => a !== null)) {
+                elements.submitBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Calculates the score, displays the results, and shows feedback.
+         */
+        function submitQuiz() {
+            let correctCount = 0;
+            elements.feedbackSummary.innerHTML = '';
+
+            quizData.forEach((q, index) => {
+                const selectedOptionIndex = state.answers[index];
+                const selectedAnswerText = q.options[selectedOptionIndex];
+                
+                let feedbackText = '';
+                let isCorrect = false;
+
+                if (selectedAnswerText === q.answer) {
+                    correctCount++;
+                    isCorrect = true;
+                    feedbackText = `<p class="text-emerald-400 font-bold">✅ Correct!</p>`;
+                } else {
+                    const selected = selectedOptionIndex !== null ? `<span class="text-red-400">You chose: ${selectedAnswerText}</span>` : `<span class="text-yellow-400">You skipped this question.</span>`;
+                    feedbackText = `<p class="text-red-400 font-bold">❌ Incorrect/Skipped</p> ${selected} <br> Correct Answer: <span class="text-emerald-400">${q.answer}</span>`;
+                }
+
+                // Append detailed feedback
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'border-b border-gray-800 pb-2 last:border-b-0';
+                feedbackItem.innerHTML = `<p class="font-medium text-cyan-400">Q${index + 1}: ${q.question}</p>${feedbackText}`;
+                elements.feedbackSummary.appendChild(feedbackItem);
+            });
+
+            state.score = correctCount;
+            state.isSubmitted = true;
+            
+            // Update the UI to show results
+            elements.quizArea.classList.add('hidden');
+            elements.resultsArea.classList.remove('hidden');
+            elements.finalScore.textContent = `${correctCount} / ${quizData.length}`;
+            
+            // Re-render to show correct/incorrect on final view (optional, but good practice)
+            // If you want to review the quiz immediately after submission, you would navigate to Q1 and call renderQuiz()
+            // For simplicity, we stick to the score screen for now.
+        }
+
+        /**
+         * Resets the quiz state and restarts the application.
+         */
+        function restartQuiz() {
+            state.currentQuestionIndex = 0;
+            state.answers.fill(null);
+            state.score = 0;
+            state.isSubmitted = false;
+
+            elements.resultsArea.classList.add('hidden');
+            elements.quizArea.classList.remove('hidden');
+            
+            renderQuiz();
+        }
+
+        // --- Event Listeners ---
+        elements.prevBtn.addEventListener('click', () => {
+            if (state.currentQuestionIndex > 0) {
+                state.currentQuestionIndex--;
+                renderQuiz();
+            }
+        });
+
+        elements.nextBtn.addEventListener('click', () => {
+            if (state.currentQuestionIndex < quizData.length - 1) {
+                state.currentQuestionIndex++;
+                renderQuiz();
+            }
+        });
+
+        elements.submitBtn.addEventListener('click', submitQuiz);
+
+        elements.restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz on page load
+        document.addEventListener('DOMContentLoaded', renderQuiz);
+
+    </script>
+</body>
+</html>
